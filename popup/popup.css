@@ -1,0 +1,87 @@
+:root {
+  color-scheme: light;
+  font: 14px/1.45 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #f7f8fc;
+  color: #192036;
+}
+
+* { box-sizing: border-box; }
+
+body { margin: 0; width: 368px; min-width: 320px; }
+
+button { font: inherit; cursor: pointer; }
+
+button:focus-visible { outline: 3px solid #7f8ef8; outline-offset: 2px; }
+
+.popup { padding: 19px; }
+
+.header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+
+.mark {
+  display: grid;
+  place-items: center;
+  flex: 0 0 39px;
+  height: 39px;
+  border-radius: 12px;
+  background: linear-gradient(140deg, #3848a8, #5c6bea);
+  color: white;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .03em;
+  box-shadow: 0 5px 13px #343fa733;
+}
+
+.eyebrow { margin: 0 0 1px; color: #65708b; font-size: 11px; font-weight: 650; letter-spacing: .03em; text-transform: uppercase; }
+
+h1 { margin: 0; font-size: 15px; line-height: 1.25; letter-spacing: -.02em; }
+
+h2 { margin: 0; font-size: 13px; font-weight: 750; }
+
+.context, .library {
+  padding: 16px;
+  border: 1px solid #e4e8f2;
+  border-radius: 15px;
+  background: #fff;
+  box-shadow: 0 3px 14px #2b3c7510;
+}
+
+.library { margin-top: 11px; }
+
+.section-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+
+.status, .local-tag { flex: none; border-radius: 999px; padding: 3px 8px; font-size: 10px; font-weight: 700; }
+
+.status-loading { background: #eff1f7; color: #5e6880; }
+.status-detected { background: #e9f8ef; color: #197247; }
+.status-missing { background: #f0f1f5; color: #68748a; }
+.local-tag { background: #eef0ff; color: #4a57aa; }
+
+.label { margin: 16px 0 3px; color: #6b7590; font-size: 11px; font-weight: 650; text-transform: uppercase; letter-spacing: .02em; }
+.subject { margin: 0; font-size: 15px; font-weight: 750; line-height: 1.3; overflow-wrap: anywhere; }
+.hint { margin: 6px 0 0; color: #65718a; font-size: 12px; }
+
+.metrics { display: grid; grid-template-columns: repeat(2, 1fr); gap: 9px; margin-top: 15px; }
+.metric { display: flex; flex-direction: column; padding: 11px 12px; border: 1px solid #e9ecf6; border-radius: 10px; background: #fafbff; }
+.metric-value { color: #29398d; font-size: 22px; font-weight: 800; letter-spacing: -.04em; line-height: 1.1; }
+.metric-label { margin-top: 4px; color: #64718a; font-size: 11px; }
+
+.sync-date { display: flex; justify-content: space-between; gap: 12px; padding-top: 13px; margin-top: 13px; border-top: 1px solid #edf0f7; color: #65718a; font-size: 12px; }
+.sync-date strong { color: #303b5a; font-weight: 700; text-align: right; }
+
+.feedback { margin-top: 12px; padding: 10px 12px; border: 1px solid #dbe4f8; border-radius: 10px; background: #eef3ff; color: #334584; font-size: 12px; }
+.feedback.error { border-color: #f3d5d2; background: #fff2f0; color: #a03732; }
+.feedback.success { border-color: #caead6; background: #eaf8ef; color: #207348; }
+
+.actions { display: grid; gap: 9px; margin-top: 15px; }
+.button { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 39px; border-radius: 10px; border: 1px solid transparent; font-weight: 720; transition: background .15s, transform .15s; }
+.button:active:not(:disabled) { transform: translateY(1px); }
+.button-primary { background: #3f50b8; color: #fff; }
+.button-primary:hover:not(:disabled) { background: #3444a7; }
+.button-primary:disabled { background: #b2b9d5; cursor: not-allowed; }
+.button-secondary { border-color: #d8def0; background: #fff; color: #3444a7; }
+.button-secondary:hover { background: #f3f5ff; }
+.button-icon { font-size: 19px; line-height: 1; font-weight: 400; }
+.planner-link { display: flex; justify-content: center; align-items: center; gap: 5px; width: 100%; margin-top: 11px; padding: 6px; border: 0; background: transparent; color: #505e8f; font-size: 12px; font-weight: 650; }
+.planner-link:hover { color: #303e96; text-decoration: underline; }
+
+@media (prefers-reduced-motion: reduce) { .button { transition: none; } }

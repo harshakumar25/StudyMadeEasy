@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <title>StudyMadeEasy · Study dashboard</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script type="module" src="dashboard.js"></script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Main navigation">
+        <div class="brand" aria-label="StudyMadeEasy">
+          <div class="brand-icon" aria-hidden="true"><span></span><span></span><span></span></div>
+          <div><strong>StudyMadeEasy</strong><small>Your study workspace</small></div>
+        </div>
+        <div class="sidebar-label">WORKSPACE</div>
+        <nav class="main-nav" aria-label="Dashboard sections">
+          <button class="nav-item is-active" type="button" data-view="overview" aria-current="page"><span class="nav-icon" aria-hidden="true">▦</span><span>Overview</span></button>
+          <button class="nav-item" type="button" data-view="questions"><span class="nav-icon" aria-hidden="true">▤</span><span>Question bank</span><span id="nav-question-count" class="nav-count" hidden></span></button>
+          <button class="nav-item" type="button" data-view="planner"><span class="nav-icon" aria-hidden="true">▢</span><span>My planner</span><span id="nav-task-count" class="nav-count" hidden></span></button>
+        </nav>
+        <div class="sidebar-foot">
+          <div class="sidebar-tip"><span aria-hidden="true">✦</span><p>Plan a little. Make steady progress.</p></div>
+          <p class="sidebar-caption">Your dashboard reflects records you have saved from your LMS.</p>
+        </div>
+      </aside>
+
+      <div class="content-shell">
+        <header class="topbar">
+          <div class="mobile-brand"><span class="mobile-brand-mark" aria-hidden="true">S</span><strong>StudyMadeEasy</strong></div>
+          <div class="topbar-left"><span class="topbar-kicker">STUDY WORKSPACE</span><span id="today-label"></span></div>
+          <div class="topbar-actions">
+            <label for="subject-select">Subject</label>
+            <select id="subject-select" aria-label="Filter dashboard by subject"><option value="all">All subjects</option></select>
+            <button id="refresh-button" class="icon-button" type="button" title="Refresh saved records" aria-label="Refresh saved records">↻</button>
+          </div>
+        </header>
+
+        <main id="main-content">
+          <section id="overview-view" class="view is-visible" aria-labelledby="overview-heading">
+            <div class="page-heading overview-heading">
+              <div><p class="eyebrow">YOUR STUDY AT A GLANCE</p><h1 id="overview-heading">Make today count.</h1><p id="overview-subtitle" class="page-subtitle">Your saved questions and plans, in one place.</p></div>
+              <button class="primary-button" type="button" data-action="add-task"><span aria-hidden="true">＋</span> Plan a task</button>
+            </div>
+
+            <div id="reminder-banner" class="reminder-banner" role="status" hidden></div>
+
+            <div id="overview-stats" class="stats-grid" aria-label="Study statistics"></div>
+
+            <div class="overview-grid">
+              <section class="panel guidance-panel" aria-labelledby="guidance-heading">
+                <div class="panel-heading"><div><p class="eyebrow">A GOOD PLACE TO START</p><h2 id="guidance-heading">What should I do?</h2></div><span class="sparkle" aria-hidden="true">✦</span></div>
+                <div id="guidance-list" class="guidance-list"></div>
+              </section>
+              <section class="panel" aria-labelledby="today-heading">
+                <div class="panel-heading"><div><p class="eyebrow">YOUR PLAN</p><h2 id="today-heading">Today &amp; overdue</h2></div><button class="text-button" type="button" data-view="planner">Open planner <span aria-hidden="true">→</span></button></div>
+                <div id="today-task-list" class="compact-task-list"></div>
+              </section>
+            </div>
+
+            <section class="panel subject-panel" aria-labelledby="subject-heading">
+              <div class="panel-heading"><div><p class="eyebrow">EXPLORE YOUR MATERIAL</p><h2 id="subject-heading">Subjects</h2></div><button class="text-button" type="button" data-view="questions">View questions <span aria-hidden="true">→</span></button></div>
+              <div id="subject-grid" class="subject-grid"></div>
+            </section>
+          </section>
+
+          <section id="questions-view" class="view" aria-labelledby="questions-heading" hidden>
+            <div class="page-heading">
+              <div><p class="eyebrow">YOUR SAVED MATERIAL</p><h1 id="questions-heading">Question bank</h1><p id="question-subtitle" class="page-subtitle">Find the exact question you want to work on.</p></div>
+              <div class="heading-actions"><button id="export-json" class="secondary-button" type="button">Export JSON</button><button id="clear-filters-top" class="secondary-button" type="button">Clear filters</button></div>
+            </div>
+            <div class="bank-layout">
+              <aside class="filter-panel panel" aria-label="Question filters">
+                <div class="filter-heading"><h2>Filters</h2><button id="clear-filters" class="text-button" type="button">Reset</button></div>
+                <label class="field-label" for="filter-search">Search question text</label>
+                <div class="search-field"><span aria-hidden="true">⌕</span><input id="filter-search" type="search" placeholder="Search saved questions" autocomplete="off" /></div>
+                <div id="filter-controls" class="filter-controls">
+                  <label>Week<select id="filter-week" data-filter="week"><option value="">Any week</option></select></label>
+                  <label>Session type<select id="filter-session-type" data-filter="sessionType"><option value="">Any type</option></select></label>
+                  <label>Session<select id="filter-session" data-filter="session"><option value="">Any session</option></select></label>
+                  <label>Topic<select id="filter-topic" data-filter="topic"><option value="">Any topic</option></select></label>
+                  <label>Subtopic<select id="filter-subtopic" data-filter="subtopic"><option value="">Any subtopic</option></select></label>
+                  <label>Difficulty<select id="filter-difficulty" data-filter="difficulty"><option value="">Any difficulty</option></select></label>
+                  <label>Question type<select id="filter-question-type" data-filter="questionType"><option value="">Any question type</option></select></label>
+                  <label>Assignment<select id="filter-assignment" data-filter="assignment"><option value="">Any assignment</option></select></label>
+                  <label>Extraction status<select id="filter-extraction-status" data-filter="extractionStatus"><option value="">Any status</option></select></label>
+                  <label>Classification source<select id="filter-classification-source" data-filter="classificationSource"><option value="">Any source</option></select></label>
+                </div>
+              </aside>
+
+              <div class="result-panel">
+                <div class="result-toolbar"><div><strong id="result-count">0 questions</strong><span id="result-context"></span></div><label for="sort-select">Sort<select id="sort-select"><option value="source">Original LMS order</option><option value="sessionDate">Session date</option><option value="week">Week</option><option value="topic">Topic</option><option value="difficulty">Difficulty</option><option value="newest">Recently saved</option></select></label></div>
+                <div id="question-list" class="question-list" aria-live="polite"></div>
+              </div>
+
+              <aside id="question-detail" class="detail-panel panel" aria-label="Question details" aria-live="polite"></aside>
+            </div>
+          </section>
+
+          <section id="planner-view" class="view" aria-labelledby="planner-heading" hidden>
+            <div class="page-heading">
+              <div><p class="eyebrow">A PLAN THAT FITS YOU</p><h1 id="planner-heading">My planner</h1><p class="page-subtitle">Choose what you will solve and cover this week.</p></div>
+              <button class="primary-button" type="button" data-action="add-task"><span aria-hidden="true">＋</span> Add task</button>
+            </div>
+            <div class="planner-toolbar panel">
+              <div class="week-navigation"><button id="previous-week" class="icon-button" type="button" aria-label="Previous week">←</button><div><strong id="week-range"></strong><small id="week-status"></small></div><button id="next-week" class="icon-button" type="button" aria-label="Next week">→</button><button id="this-week" class="today-button" type="button">This week</button></div>
+              <div class="segmented-control" role="group" aria-label="Planner view"><button id="planner-week-mode" type="button" class="is-active" aria-pressed="true">Week</button><button id="planner-today-mode" type="button" aria-pressed="false">Today</button></div>
+            </div>
+            <div id="planner-summary" class="planner-summary"></div>
+            <div id="planner-content" class="planner-content"></div>
+          </section>
+        </main>
+      </div>
+    </div>
+
+    <nav class="mobile-nav" aria-label="Main navigation">
+      <button class="is-active" type="button" data-view="overview" aria-current="page"><span aria-hidden="true">▦</span>Overview</button>
+      <button type="button" data-view="questions"><span aria-hidden="true">▤</span>Questions</button>
+      <button type="button" data-view="planner"><span aria-hidden="true">▢</span>Planner</button>
+    </nav>
+
+    <dialog id="task-dialog" aria-labelledby="task-dialog-heading">
+      <form id="task-form" method="dialog" novalidate>
+        <div class="dialog-heading"><div><p class="eyebrow">YOUR WEEK, YOUR PLAN</p><h2 id="task-dialog-heading">Add a task</h2></div><button id="close-dialog" class="icon-button" type="button" aria-label="Close dialog">×</button></div>
+        <div id="task-form-error" class="form-error" role="alert" hidden></div>
+        <div class="form-grid">
+          <label class="full-span">I want to<select id="task-kind" name="kind"><option value="question">Solve a question</option><option value="topic">Cover a topic</option><option value="task">Add my own task</option></select></label>
+          <label id="task-question-field" class="full-span">Question<select id="task-question" name="questionId"><option value="">Choose a saved question</option></select></label>
+          <label class="full-span">Task title<input id="task-title" name="title" type="text" maxlength="160" placeholder="What will you complete?" required /></label>
+          <label>Subject<select id="task-subject" name="subjectId"><option value="">No subject</option></select></label>
+          <label>Topic<input id="task-topic" name="topic" type="text" maxlength="120" placeholder="Optional topic" /></label>
+          <label>Due date &amp; time<input id="task-due" name="dueAt" type="datetime-local" required /></label>
+          <label>Remind me at<input id="task-remind" name="remindAt" type="datetime-local" /><small>Leave blank for no notification.</small></label>
+        </div>
+        <div class="dialog-actions"><button id="cancel-task" class="secondary-button" type="button">Cancel</button><button id="save-task" class="primary-button" type="submit">Save task</button></div>
+      </form>
+    </dialog>
+
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+  </body>
+</html>

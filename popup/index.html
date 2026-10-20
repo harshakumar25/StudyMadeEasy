@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>LMS Question Intelligence</title>
+    <link rel="stylesheet" href="popup.css">
+  </head>
+  <body>
+    <main class="popup">
+      <header class="header">
+        <div class="mark" aria-hidden="true">QI</div>
+        <div class="heading">
+          <p class="eyebrow">Your study workspace</p>
+          <h1>LMS Question Intelligence</h1>
+        </div>
+      </header>
+
+      <section class="context" aria-labelledby="context-heading">
+        <div class="section-top">
+          <h2 id="context-heading">Current page</h2>
+          <span id="lms-status" class="status status-loading">Checking…</span>
+        </div>
+        <p id="subject-label" class="label">Current subject</p>
+        <p id="subject" class="subject">Checking this page…</p>
+        <p id="page-hint" class="hint">Looking for a supported LMS course.</p>
+      </section>
+
+      <section class="library" aria-labelledby="library-heading">
+        <div class="section-top">
+          <h2 id="library-heading">Your question bank</h2>
+          <span class="local-tag">Saved locally</span>
+        </div>
+        <div class="metrics">
+          <div class="metric">
+            <span id="question-count" class="metric-value">—</span>
+            <span class="metric-label">Questions</span>
+          </div>
+          <div class="metric">
+            <span id="session-count" class="metric-value">—</span>
+            <span class="metric-label">Sessions</span>
+          </div>
+        </div>
+        <div class="sync-date">
+          <span>Last sync</span>
+          <strong id="last-sync">Checking…</strong>
+        </div>
+      </section>
+
+      <div id="feedback" class="feedback" role="status" aria-live="polite" hidden></div>
+
+      <div class="actions">
+        <button id="sync-button" class="button button-primary" type="button" disabled>
+          <span class="button-icon" aria-hidden="true">↻</span>
+          <span id="sync-button-label">Sync Current Course</span>
+        </button>
+        <button id="bank-button" class="button button-secondary" type="button">
+          Open Question Bank <span aria-hidden="true">↗</span>
+        </button>
+      </div>
+      <button id="planner-button" class="planner-link" type="button">Open weekly planner <span aria-hidden="true">→</span></button>
+    </main>
+    <script type="module" src="popup.js"></script>
+  </body>
+</html>

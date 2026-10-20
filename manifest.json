@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "LMS Question Intelligence",
+  "version": "0.1.0",
+  "description": "A local-first, source-preserving Vedam question bank and study planner.",
+  "permissions": ["alarms", "notifications"],
+  "host_permissions": ["https://student.vedam.org/*"],
+  "background": {
+    "service_worker": "src/background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_title": "LMS Question Intelligence",
+    "default_popup": "popup/index.html"
+  },
+  "options_page": "dashboard/index.html",
+  "content_scripts": [
+    {
+      "matches": ["https://student.vedam.org/*"],
+      "js": ["src/content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "icons": {
+    "128": "popup/reminder-icon.png"
+  }
+}
