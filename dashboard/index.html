@@ -69,7 +69,12 @@
           <section id="questions-view" class="view" aria-labelledby="questions-heading" hidden>
             <div class="page-heading">
               <div><p class="eyebrow">YOUR SAVED MATERIAL</p><h1 id="questions-heading">Question bank</h1><p id="question-subtitle" class="page-subtitle">Find the exact question you want to work on.</p></div>
-              <div class="heading-actions"><button id="export-json" class="secondary-button" type="button">Export JSON</button><button id="clear-filters-top" class="secondary-button" type="button">Clear filters</button></div>
+              <div class="heading-actions">
+                <input type="file" id="import-json-file" accept=".json,application/json" style="display:none;" />
+                <button id="import-json" class="secondary-button" type="button">Import JSON</button>
+                <button id="export-json" class="secondary-button" type="button">Export JSON</button>
+                <button id="clear-filters-top" class="secondary-button" type="button">Clear filters</button>
+              </div>
             </div>
             <div class="bank-layout">
               <aside class="filter-panel panel" aria-label="Question filters">

@@ -1,4 +1,4 @@
-import { getAll, putRecord, deleteRecord, updateQuestionMetadata, backfillQuestionClassifications } from '../src/db.js';
+import { getAll, putRecord, deleteRecord, updateQuestionMetadata, backfillQuestionClassifications, importBackupStores } from '../src/db.js';
 import { calendarWeekFromDate } from '../src/calendar-week.js';
 
 const $ = (id) => document.getElementById(id);
@@ -139,6 +139,23 @@ function safeSourceUrl(value, base = '') {
     return url.protocol === 'https:' && url.hostname === 'student.vedam.org' && !url.port && !url.username && !url.password ? url.href : '';
   } catch { return ''; }
 }
+function questionLmsUrl(question) {
+  if (!question) return '';
+  const direct = safeSourceUrl(question.source?.url);
+  if (direct) return direct;
+  const qid = idOf(question.id);
+  const parts = qid.split(':');
+  if (parts.length >= 4) {
+    const courseId = parts[1];
+    const assignmentId = parts[2];
+    const questionId = parts[3];
+    const sessionId = idOf(question.sessionId).replace(/^vedam-session:/, '');
+    if (sessionId && assignmentId && questionId) {
+      return `https://student.vedam.org/sessions/${encodeURIComponent(sessionId)}/${encodeURIComponent(assignmentId)}?courseOfferingId=${encodeURIComponent(courseId)}&questionId=${encodeURIComponent(questionId)}`;
+    }
+  }
+  return '';
+}
 function safeRichContent(question) {
   const fragment = document.createDocumentFragment();
   const blocks = Array.isArray(question.original?.contentBlocks) ? [...question.original.contentBlocks] : [];
@@ -198,7 +215,7 @@ function emptyState(title, description, icon = '▤', buttonLabel = '', onClick 
   }
   return box;
 }
-async function loadAll() {
+async function loadAll(checkAutoRestore = true) {
   try {
     await backfillQuestionClassifications();
     const [courses, sessions, assignments, questions, plans] = await Promise.all([
@@ -215,6 +232,9 @@ async function loadAll() {
     state.questionById = new Map(state.questions.map((question) => [idOf(question.id), question]));
     buildSubjects();
     render();
+    if (checkAutoRestore && state.questions.length === 0) {
+      await autoRestoreIfEmpty();
+    }
   } catch (error) {
     console.error('Could not load study data', error);
     showToast('Could not load saved records. Try refreshing.');
@@ -532,6 +552,19 @@ function renderQuestionCard(question) {
     const value = filterValue(question, key);
     if (value) badges.append(node('span', `pill ${style}`, key === 'week' && !/^week\b/i.test(value) ? `Week ${value}` : value));
   }
+  const lmsUrl = questionLmsUrl(question);
+  if (lmsUrl) {
+    const lmsLink = node('a', 'text-button', 'Open in LMS ↗');
+    lmsLink.href = lmsUrl;
+    lmsLink.target = '_blank';
+    lmsLink.rel = 'noopener noreferrer';
+    lmsLink.style.marginLeft = 'auto';
+    lmsLink.style.fontSize = '11px';
+    lmsLink.style.fontWeight = '700';
+    lmsLink.style.textDecoration = 'none';
+    lmsLink.addEventListener('click', (e) => e.stopPropagation());
+    badges.append(lmsLink);
+  }
   card.append(badges);
   card.addEventListener('click', () => { state.selectedQuestionId = id; renderQuestions(); });
   return card;
@@ -550,9 +583,20 @@ function renderQuestionDetail() {
   const heading = node('div');
   heading.append(node('p', 'eyebrow', 'SOURCE QUESTION'), node('h2', '', questionLabel(question)));
   header.append(heading, node('span', 'pill accent', questionSubjectName(question)));
-  container.append(header);
   const toolbar = node('div', 'detail-toolbar');
-  const plan = node('button', 'primary-button', '＋  Plan this question');
+  const lmsUrl = questionLmsUrl(question);
+  if (lmsUrl) {
+    const openLms = node('a', 'primary-button', 'Open in LMS ↗');
+    openLms.href = lmsUrl;
+    openLms.target = '_blank';
+    openLms.rel = 'noopener noreferrer';
+    openLms.style.textDecoration = 'none';
+    openLms.style.display = 'inline-flex';
+    openLms.style.alignItems = 'center';
+    openLms.style.justifyContent = 'center';
+    toolbar.append(openLms);
+  }
+  const plan = node('button', lmsUrl ? 'secondary-button' : 'primary-button', '＋  Plan this question');
   plan.type = 'button'; plan.addEventListener('click', () => openTaskDialog(null, question));
   const copy = node('button', 'secondary-button', 'Copy text');
   copy.type = 'button'; copy.disabled = !originalText(question);
@@ -728,6 +772,50 @@ async function exportBackup() {
     button.textContent = 'Export JSON';
   }
 }
+
+async function importBackupFile(file) {
+  if (!file) return;
+  const button = $('import-json');
+  button.disabled = true;
+  button.textContent = 'Importing…';
+  try {
+    const text = await file.text();
+    const backup = JSON.parse(text);
+    if (!backup.stores || typeof backup.stores !== 'object') {
+      throw new Error('Invalid backup file format.');
+    }
+    const count = await importBackupStores(backup.stores);
+    await loadAll(false);
+    showToast(`Imported ${count} items. Question bank updated!`);
+  } catch (error) {
+    console.error('Could not import backup', error);
+    showToast(`Could not import backup: ${error.message || 'unknown error'}`);
+  } finally {
+    button.disabled = false;
+    button.textContent = 'Import JSON';
+    $('import-json-file').value = '';
+  }
+}
+
+async function autoRestoreIfEmpty() {
+  if (state.questions.length === 0) {
+    try {
+      const url = chrome?.runtime?.getURL ? chrome.runtime.getURL('dashboard/backup_questions.json') : 'backup_questions.json';
+      const res = await fetch(url);
+      if (res.ok) {
+        const backup = await res.json();
+        if (backup?.stores?.questions?.length > 0) {
+          await importBackupStores(backup.stores);
+          await loadAll(false);
+          showToast(`Restored ${backup.stores.questions.length} saved questions!`);
+        }
+      }
+    } catch (e) {
+      console.log('No local auto-restore backup', e);
+    }
+  }
+}
+
 function compareDue(a, b) { return (asDate(a.dueAt)?.getTime() || Infinity) - (asDate(b.dueAt)?.getTime() || Infinity); }
 function weekRangeLabel(start) {
   const end = addDays(start, 6);
@@ -822,10 +910,18 @@ function renderTaskCard(plan) {
   if (plan.remindAt && !complete) details.append(node('span', 'pill', `Reminder ${humanDate(plan.remindAt)} ${humanTime(plan.remindAt)}`));
   body.append(details);
   if (plan.questionId && state.questionById.has(idOf(plan.questionId))) {
+    const q = state.questionById.get(idOf(plan.questionId));
+    const url = questionLmsUrl(q);
     const link = node('button', 'text-button', 'View saved question →');
     link.type = 'button'; link.style.marginTop = '8px';
     link.addEventListener('click', () => { state.selectedQuestionId = idOf(plan.questionId); state.subject = 'all'; $('subject-select').value = 'all'; setView('questions'); });
     body.append(link);
+    if (url) {
+      const lmsLink = node('a', 'text-button', 'Open in LMS ↗');
+      lmsLink.href = url; lmsLink.target = '_blank'; lmsLink.rel = 'noopener noreferrer';
+      lmsLink.style.marginTop = '8px'; lmsLink.style.marginLeft = '12px';
+      body.append(lmsLink);
+    }
   }
   card.append(body);
   const actions = node('div', 'task-actions');
@@ -950,6 +1046,11 @@ function bindEvents() {
   $('clear-filters').addEventListener('click', clearFilters);
   $('clear-filters-top').addEventListener('click', clearFilters);
   $('export-json').addEventListener('click', exportBackup);
+  $('import-json').addEventListener('click', () => $('import-json-file').click());
+  $('import-json-file').addEventListener('change', (event) => {
+    const file = event.target.files?.[0];
+    if (file) importBackupFile(file);
+  });
   $('previous-week').addEventListener('click', () => { state.weekStart = addDays(state.weekStart, -7); renderPlanner(); });
   $('next-week').addEventListener('click', () => { state.weekStart = addDays(state.weekStart, 7); renderPlanner(); });
   $('this-week').addEventListener('click', () => { state.weekStart = startOfWeek(new Date()); renderPlanner(); });

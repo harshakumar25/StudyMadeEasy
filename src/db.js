@@ -287,3 +287,25 @@ export async function updateQuestionMetadata(questionId, metadataPatch) {
   store.put({ ...existing, metadata: { ...existing.metadata, ...metadataPatch } });
   await done;
 }
+
+/** Import full stores from a JSON backup without altering valid records. */
+export async function importBackupStores(stores) {
+  if (!stores || typeof stores !== 'object') throw new Error('Invalid stores in backup.');
+  const db = await openDatabase();
+  const storeNames = Object.keys(STORE_DEFINITIONS).filter((name) => Array.isArray(stores[name]) && stores[name].length > 0);
+  if (!storeNames.length) return 0;
+  const tx = db.transaction(storeNames, 'readwrite');
+  const done = transactionResult(tx);
+  let totalRecords = 0;
+  for (const name of storeNames) {
+    const store = tx.objectStore(name);
+    for (const record of stores[name]) {
+      if (record && record.id) {
+        store.put(record);
+        totalRecords++;
+      }
+    }
+  }
+  await done;
+  return totalRecords;
+}
