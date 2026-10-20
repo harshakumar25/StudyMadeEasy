@@ -17,12 +17,33 @@
         </div>
         <div class="sidebar-label">WORKSPACE</div>
         <nav class="main-nav" aria-label="Dashboard sections">
-          <button class="nav-item is-active" type="button" data-view="overview" aria-current="page"><span class="nav-icon" aria-hidden="true">▦</span><span>Overview</span></button>
-          <button class="nav-item" type="button" data-view="questions"><span class="nav-icon" aria-hidden="true">▤</span><span>Question bank</span><span id="nav-question-count" class="nav-count" hidden></span></button>
-          <button class="nav-item" type="button" data-view="planner"><span class="nav-icon" aria-hidden="true">▢</span><span>My planner</span><span id="nav-task-count" class="nav-count" hidden></span></button>
+          <button class="nav-item is-active" type="button" data-view="overview" aria-current="page">
+            <span class="nav-icon" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            </span>
+            <span>Overview</span>
+          </button>
+          <button class="nav-item" type="button" data-view="questions">
+            <span class="nav-icon" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10"/><path d="M6 10h10"/></svg>
+            </span>
+            <span>Question bank</span>
+            <span id="nav-question-count" class="nav-count" hidden></span>
+          </button>
+          <button class="nav-item" type="button" data-view="planner">
+            <span class="nav-icon" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+            </span>
+            <span>My planner</span>
+            <span id="nav-task-count" class="nav-count" hidden></span>
+          </button>
         </nav>
         <div class="sidebar-foot">
-          <div class="sidebar-tip"><span aria-hidden="true">✦</span><p>Plan a little. Make steady progress.</p></div>
+          <div class="sidebar-tip">
+            <span aria-hidden="true">⚡</span>
+            <p>Plan a little. Make steady progress.</p>
+            <span class="tip-arrow" aria-hidden="true">→</span>
+          </div>
           <p class="sidebar-caption">Your dashboard reflects records you have saved from your LMS.</p>
         </div>
       </aside>
@@ -30,7 +51,11 @@
       <div class="content-shell">
         <header class="topbar">
           <div class="mobile-brand"><span class="mobile-brand-mark" aria-hidden="true">S</span><strong>StudyMadeEasy</strong></div>
-          <div class="topbar-left"><span class="topbar-kicker">STUDY WORKSPACE</span><span id="today-label"></span></div>
+          <div class="topbar-left">
+            <span class="topbar-kicker">STUDY WORKSPACE</span>
+            <span class="breadcrumb-sep" aria-hidden="true">›</span>
+            <span id="today-wrapper"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-1px;margin-right:4px;"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg><span id="today-label"></span></span>
+          </div>
           <div class="topbar-actions">
             <label for="subject-select">Subject</label>
             <select id="subject-select" aria-label="Filter dashboard by subject"><option value="all">All subjects</option></select>
@@ -68,35 +93,116 @@
 
           <section id="questions-view" class="view" aria-labelledby="questions-heading" hidden>
             <div class="page-heading">
-              <div><p class="eyebrow">YOUR SAVED MATERIAL</p><h1 id="questions-heading">Question bank</h1><p id="question-subtitle" class="page-subtitle">Find the exact question you want to work on.</p></div>
+              <div>
+                <p class="eyebrow">YOUR SAVED MATERIAL</p>
+                <h1 id="questions-heading">Question bank</h1>
+                <p id="question-subtitle" class="page-subtitle">Find the exact question you want to work on.</p>
+              </div>
               <div class="heading-actions">
                 <input type="file" id="import-json-file" accept=".json,application/json" style="display:none;" />
-                <button id="import-json" class="secondary-button" type="button">Import JSON</button>
-                <button id="export-json" class="secondary-button" type="button">Export JSON</button>
-                <button id="clear-filters-top" class="secondary-button" type="button">Clear filters</button>
+                <button id="import-json" class="primary-button action-btn" type="button">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                  Import JSON
+                </button>
+                <button id="export-json" class="secondary-button action-btn" type="button">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+                  Export JSON
+                </button>
+                <button id="clear-filters-top" class="secondary-button action-btn" type="button">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                  Clear filters
+                </button>
               </div>
             </div>
             <div class="bank-layout">
               <aside class="filter-panel panel" aria-label="Question filters">
-                <div class="filter-heading"><h2>Filters</h2><button id="clear-filters" class="text-button" type="button">Reset</button></div>
-                <label class="field-label" for="filter-search">Search question text</label>
-                <div class="search-field"><span aria-hidden="true">⌕</span><input id="filter-search" type="search" placeholder="Search saved questions" autocomplete="off" /></div>
-                <div id="filter-controls" class="filter-controls">
-                  <label>Week<select id="filter-week" data-filter="week"><option value="">Any week</option></select></label>
-                  <label>Session type<select id="filter-session-type" data-filter="sessionType"><option value="">Any type</option></select></label>
-                  <label>Session<select id="filter-session" data-filter="session"><option value="">Any session</option></select></label>
-                  <label>Topic<select id="filter-topic" data-filter="topic"><option value="">Any topic</option></select></label>
-                  <label>Subtopic<select id="filter-subtopic" data-filter="subtopic"><option value="">Any subtopic</option></select></label>
-                  <label>Difficulty<select id="filter-difficulty" data-filter="difficulty"><option value="">Any difficulty</option></select></label>
-                  <label>Question type<select id="filter-question-type" data-filter="questionType"><option value="">Any question type</option></select></label>
-                  <label>Assignment<select id="filter-assignment" data-filter="assignment"><option value="">Any assignment</option></select></label>
-                  <label>Extraction status<select id="filter-extraction-status" data-filter="extractionStatus"><option value="">Any status</option></select></label>
-                  <label>Classification source<select id="filter-classification-source" data-filter="classificationSource"><option value="">Any source</option></select></label>
+                <div class="filter-heading">
+                  <h2>Filters</h2>
+                  <button id="clear-filters" class="text-button" type="button">Reset</button>
+                </div>
+                <div class="search-field">
+                  <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                  <input id="filter-search" type="search" placeholder="Search saved questions" autocomplete="off" />
+                </div>
+                <div class="filter-accordions">
+                  <details class="filter-accordion" open>
+                    <summary class="accordion-header">
+                      <span class="accordion-title">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        Time &amp; session
+                      </span>
+                      <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+                    </summary>
+                    <div class="accordion-body">
+                      <label>Week<select id="filter-week" data-filter="week"><option value="">Any week</option></select></label>
+                      <label>Session type<select id="filter-session-type" data-filter="sessionType"><option value="">Any type</option></select></label>
+                      <label>Session<select id="filter-session" data-filter="session"><option value="">Any session</option></select></label>
+                    </div>
+                  </details>
+
+                  <details class="filter-accordion" open>
+                    <summary class="accordion-header">
+                      <span class="accordion-title">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><circle cx="7" cy="7" r=".5" fill="currentColor"/></svg>
+                        Classification
+                      </span>
+                      <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+                    </summary>
+                    <div class="accordion-body">
+                      <label>Topic<select id="filter-topic" data-filter="topic"><option value="">Any topic</option></select></label>
+                      <label>Subtopic<select id="filter-subtopic" data-filter="subtopic"><option value="">Any subtopic</option></select></label>
+                    </div>
+                  </details>
+
+                  <details class="filter-accordion" open>
+                    <summary class="accordion-header">
+                      <span class="accordion-title">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/></svg>
+                        Difficulty &amp; type
+                      </span>
+                      <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+                    </summary>
+                    <div class="accordion-body">
+                      <label>Difficulty<select id="filter-difficulty" data-filter="difficulty"><option value="">Any difficulty</option></select></label>
+                      <label>Question type<select id="filter-question-type" data-filter="questionType"><option value="">Any question type</option></select></label>
+                    </div>
+                  </details>
+
+                  <details class="filter-accordion" open>
+                    <summary class="accordion-header">
+                      <span class="accordion-title">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 8 12 12 14 14"/></svg>
+                        Status
+                      </span>
+                      <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+                    </summary>
+                    <div class="accordion-body">
+                      <label>Assignment<select id="filter-assignment" data-filter="assignment"><option value="">Any assignment</option></select></label>
+                      <label>Extraction status<select id="filter-extraction-status" data-filter="extractionStatus"><option value="">Any status</option></select></label>
+                      <label>Classification source<select id="filter-classification-source" data-filter="classificationSource"><option value="">Any source</option></select></label>
+                    </div>
+                  </details>
                 </div>
               </aside>
 
               <div class="result-panel">
-                <div class="result-toolbar"><div><strong id="result-count">0 questions</strong><span id="result-context"></span></div><label for="sort-select">Sort<select id="sort-select"><option value="source">Original LMS order</option><option value="sessionDate">Session date</option><option value="week">Week</option><option value="topic">Topic</option><option value="difficulty">Difficulty</option><option value="newest">Recently saved</option></select></label></div>
+                <div class="result-toolbar">
+                  <div>
+                    <strong id="result-count">0 questions</strong>
+                    <span id="result-context"></span>
+                  </div>
+                  <label for="sort-select">
+                    Sort
+                    <select id="sort-select">
+                      <option value="source">Original LMS order</option>
+                      <option value="sessionDate">Session date</option>
+                      <option value="week">Week</option>
+                      <option value="topic">Topic</option>
+                      <option value="difficulty">Difficulty</option>
+                      <option value="newest">Recently saved</option>
+                    </select>
+                  </label>
+                </div>
                 <div id="question-list" class="question-list" aria-live="polite"></div>
               </div>
 

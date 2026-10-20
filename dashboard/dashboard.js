@@ -486,6 +486,39 @@ function groupedQuestions(questions) {
   }
   return subjects;
 }
+function questionTitle(question) {
+  const text = originalText(question);
+  if (text) {
+    const firstLine = text.split('\n')[0].trim();
+    if (firstLine && firstLine.length < 90 && !/^(Input|Output|Example|Note|Constraints)\b/i.test(firstLine)) {
+      return firstLine;
+    }
+  }
+  return questionLabel(question);
+}
+
+function questionBody(question) {
+  const text = originalText(question);
+  if (text) {
+    const lines = text.split('\n');
+    if (lines.length > 1) {
+      const rest = lines.slice(1).join('\n').trim();
+      if (rest) return rest;
+    }
+    return text;
+  }
+  return '';
+}
+
+function difficultyPill(diff) {
+  const d = String(diff || '').toUpperCase();
+  if (d === 'EASY') return node('span', 'pill diff-easy', '🎗️ Easy');
+  if (d === 'MEDIUM') return node('span', 'pill diff-medium', '🎗️ Medium');
+  if (d === 'HARD') return node('span', 'pill diff-hard', '🎗️ Hard');
+  if (diff && !unknown(diff)) return node('span', 'pill', diff);
+  return null;
+}
+
 function renderQuestionGroups(questions) {
   const fragment = document.createDocumentFragment();
   for (const [, subject] of groupedQuestions(questions)) {
@@ -507,7 +540,7 @@ function renderQuestionGroups(questions) {
         const topicSection = node('section', 'topic-group');
         topicSection.setAttribute('aria-label', `Topic ${topicKey}`);
         const topicHead = node('div', 'topic-group-heading');
-        topicHead.append(node('h4', '', topicKey), node('span', 'group-count', fmtCount(topicQuestions.length, 'question')));
+        topicHead.append(node('h4', '', topicKey), node('span', 'topic-chevron', '⌄'));
         topicSection.append(topicHead);
         const cards = node('div', 'topic-questions');
         for (const question of topicQuestions) cards.append(renderQuestionCard(question));
@@ -542,30 +575,51 @@ function renderQuestions() {
 }
 function renderQuestionCard(question) {
   const id = idOf(question.id);
-  const card = node('button', `question-card ${state.selectedQuestionId === id ? 'is-selected' : ''}`);
-  card.type = 'button'; card.dataset.questionId = id; card.setAttribute('aria-pressed', state.selectedQuestionId === id ? 'true' : 'false');
+  const isSelected = state.selectedQuestionId === id;
+  const card = node('button', `question-card ${isSelected ? 'is-selected' : ''}`);
+  card.type = 'button'; card.dataset.questionId = id; card.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
+  
   const top = node('div', 'question-card-top');
-  top.append(node('span', 'question-index', questionLabel(question).toUpperCase()), node('span', 'question-subject', questionSubjectName(question)));
-  card.append(top, node('p', 'question-preview', originalText(question) || (question.original?.htmlSnapshot ? 'Original HTML captured; open details to inspect the source.' : 'Question text was not captured.')));
-  const badges = node('div', 'question-meta');
-  for (const [key, style] of [['week', 'accent'], ['topic', ''], ['difficulty', '']]) {
-    const value = filterValue(question, key);
-    if (value) badges.append(node('span', `pill ${style}`, key === 'week' && !/^week\b/i.test(value) ? `Week ${value}` : value));
+  const indexEl = node('span', 'question-index', questionLabel(question).toUpperCase());
+  top.append(indexEl);
+  if (isSelected) {
+    const checkmark = node('span', 'selected-check-icon');
+    checkmark.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="#4f46e5"><circle cx="12" cy="12" r="10" fill="#4f46e5"/><path d="m9 12 2 2 4-4" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    top.append(checkmark);
+  } else {
+    const subLabel = questionSubjectName(question);
+    top.append(node('span', 'question-subject', subLabel));
   }
+  
+  const titleText = questionTitle(question);
+  card.append(top, node('h4', 'question-card-title', titleText));
+  
+  const snippet = questionBody(question) || originalText(question) || (question.original?.htmlSnapshot ? 'Original HTML captured; open details to inspect the source.' : 'Question text was not captured.');
+  card.append(node('p', 'question-preview', snippet));
+  
+  const bottom = node('div', 'question-card-bottom');
+  const badges = node('div', 'question-meta');
+  const weekVal = filterValue(question, 'week');
+  if (weekVal) badges.append(node('span', 'pill accent', !/^week\b/i.test(weekVal) ? `Week ${weekVal}` : weekVal));
+  const topicVal = filterValue(question, 'topic');
+  if (topicVal) badges.append(node('span', 'pill', topicVal));
+  const diffPill = difficultyPill(filterValue(question, 'difficulty'));
+  if (diffPill) badges.append(diffPill);
+  bottom.append(badges);
+  
   const lmsUrl = questionLmsUrl(question);
   if (lmsUrl) {
-    const lmsLink = node('a', 'text-button', 'Open in LMS ↗');
+    const lmsLink = node('a', 'card-lms-link', 'Open in LMS ↗');
     lmsLink.href = lmsUrl;
     lmsLink.target = '_blank';
     lmsLink.rel = 'noopener noreferrer';
-    lmsLink.style.marginLeft = 'auto';
-    lmsLink.style.fontSize = '11px';
-    lmsLink.style.fontWeight = '700';
-    lmsLink.style.textDecoration = 'none';
     lmsLink.addEventListener('click', (e) => e.stopPropagation());
-    badges.append(lmsLink);
+    bottom.append(lmsLink);
+  } else if (!isSelected) {
+    const arrow = node('span', 'card-arrow', '›');
+    bottom.append(arrow);
   }
-  card.append(badges);
+  card.append(bottom);
   card.addEventListener('click', () => { state.selectedQuestionId = id; renderQuestions(); });
   return card;
 }
@@ -579,32 +633,61 @@ function renderQuestionDetail() {
     container.append(empty);
     return;
   }
-  const header = node('div', 'detail-header');
-  const heading = node('div');
-  heading.append(node('p', 'eyebrow', 'SOURCE QUESTION'), node('h2', '', questionLabel(question)));
-  header.append(heading, node('span', 'pill accent', questionSubjectName(question)));
+  state.detailTab = state.detailTab || 'original';
+
+  // Detail top bar
+  const topBar = node('div', 'detail-top-bar');
+  const statusPill = node('span', 'pill accent', filterValue(question, 'topic') || questionSubjectName(question) || 'UNKNOWN');
+  const moreBtn = node('button', 'more-btn', '⋮');
+  moreBtn.type = 'button';
+  moreBtn.title = 'More options';
+  moreBtn.addEventListener('click', () => {
+    navigator.clipboard.writeText(questionLmsUrl(question) || originalText(question));
+    showToast('Copied to clipboard.');
+  });
+  topBar.append(statusPill, moreBtn);
+  container.append(topBar);
+
+  // Big bold title
+  const titleText = questionTitle(question);
+  const titleEl = node('h2', 'detail-title', titleText);
+  container.append(titleEl);
+
+  // Badges row
+  const badgesRow = node('div', 'detail-badges');
+  const weekVal = filterValue(question, 'week');
+  if (weekVal) badgesRow.append(node('span', 'pill accent', !/^week\b/i.test(weekVal) ? `Week ${weekVal}` : weekVal));
+  const topicVal = filterValue(question, 'topic');
+  if (topicVal) badgesRow.append(node('span', 'pill', topicVal));
+  const diffPill = difficultyPill(filterValue(question, 'difficulty'));
+  if (diffPill) badgesRow.append(diffPill);
+  container.append(badgesRow);
+
+  // Action buttons
   const toolbar = node('div', 'detail-toolbar');
   const lmsUrl = questionLmsUrl(question);
   if (lmsUrl) {
-    const openLms = node('a', 'primary-button', 'Open in LMS ↗');
+    const openLms = node('a', 'primary-button detail-action-btn', '');
+    openLms.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" x2="21" y1="14" y2="3"/></svg> Open in LMS ↗';
     openLms.href = lmsUrl;
     openLms.target = '_blank';
     openLms.rel = 'noopener noreferrer';
-    openLms.style.textDecoration = 'none';
-    openLms.style.display = 'inline-flex';
-    openLms.style.alignItems = 'center';
-    openLms.style.justifyContent = 'center';
     toolbar.append(openLms);
   }
-  const plan = node('button', lmsUrl ? 'secondary-button' : 'primary-button', '＋  Plan this question');
+  const plan = node('button', 'secondary-button detail-action-btn', '');
+  plan.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg> Plan question';
   plan.type = 'button'; plan.addEventListener('click', () => openTaskDialog(null, question));
-  const copy = node('button', 'secondary-button', 'Copy text');
+  
+  const copy = node('button', 'secondary-button detail-action-btn', '');
+  copy.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg> Copy text';
   copy.type = 'button'; copy.disabled = !originalText(question);
   copy.addEventListener('click', async () => {
     try { await navigator.clipboard.writeText(originalText(question)); showToast('Question text copied.'); }
     catch { showToast('Could not copy question text.'); }
   });
-  const editMetadata = node('button', 'secondary-button', 'Edit metadata');
+
+  const editMetadata = node('button', 'secondary-button detail-action-btn', '');
+  editMetadata.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg> Edit metadata';
   editMetadata.type = 'button';
   const metadataEditor = renderMetadataEditor(question, editMetadata);
   metadataEditor.id = 'question-metadata-editor';
@@ -616,27 +699,40 @@ function renderQuestionDetail() {
   });
   editMetadata.setAttribute('aria-expanded', 'false');
   toolbar.append(plan, copy, editMetadata);
-  container.append(toolbar, metadataEditor, node('span', 'verbatim-label', 'Original question text'));
-  const text = originalText(question);
-  container.append(node('pre', 'verbatim-text', text || 'No plain text was captured for this question.'));
-  container.append(node('p', 'detail-note', text ? 'Displayed as saved, with original whitespace retained.' : 'Check the captured HTML source below if one is available.'));
-  if (Array.isArray(question.original?.contentBlocks) && question.original.contentBlocks.length) {
-    const preview = node('div', 'rich-preview');
-    preview.append(node('span', 'verbatim-label', 'Formatting preview'));
-    const rich = node('div', 'rich-content');
-    rich.append(safeRichContent(question));
-    if (rich.childNodes.length) {
-      preview.append(rich, node('p', 'detail-note', 'Reconstructed from saved content blocks without loading source media. Compare the exact capture above.'));
+  container.append(toolbar, metadataEditor);
+
+  // Segmented Tabs: Original vs Preview
+  const tabContainer = node('div', 'detail-tabs');
+  const origTab = node('button', `detail-tab ${state.detailTab === 'original' ? 'is-active' : ''}`, 'Original');
+  origTab.type = 'button';
+  origTab.addEventListener('click', () => { state.detailTab = 'original'; renderQuestionDetail(); });
+  const prevTab = node('button', `detail-tab ${state.detailTab === 'preview' ? 'is-active' : ''}`, 'Preview');
+  prevTab.type = 'button';
+  prevTab.addEventListener('click', () => { state.detailTab = 'preview'; renderQuestionDetail(); });
+  tabContainer.append(origTab, prevTab);
+  container.append(tabContainer);
+
+  if (state.detailTab === 'original') {
+    container.append(node('span', 'verbatim-label', 'Original question text'));
+    const text = originalText(question);
+    container.append(node('div', 'reading-pane', text || 'No plain text was captured for this question.'));
+    container.append(node('p', 'detail-note', 'Displayed as saved, with original whitespace retained.'));
+  } else {
+    if (Array.isArray(question.original?.contentBlocks) && question.original.contentBlocks.length) {
+      const preview = node('div', 'rich-preview');
+      preview.append(node('span', 'verbatim-label', 'Formatting preview'));
+      const rich = node('div', 'rich-content');
+      rich.append(safeRichContent(question));
+      preview.append(rich);
       container.append(preview);
+    } else if (typeof question.original?.htmlSnapshot === 'string' && question.original.htmlSnapshot) {
+      container.append(node('span', 'verbatim-label', 'HTML Snapshot'));
+      container.append(node('pre', 'verbatim-text', question.original.htmlSnapshot));
+    } else {
+      container.append(node('p', 'detail-note', 'No rich preview available for this question.'));
     }
   }
-  if (typeof question.original?.htmlSnapshot === 'string' && question.original.htmlSnapshot) {
-    const details = node('details', 'snapshot-details');
-    details.append(node('summary', 'verbatim-label', 'Captured HTML source'));
-    details.append(node('pre', 'verbatim-text', question.original.htmlSnapshot));
-    details.append(node('p', 'detail-note', 'HTML is shown as text and is never executed.'));
-    container.append(details);
-  }
+
   const meta = node('dl', 'detail-metadata');
   const rows = [
     ['Subject', questionSubjectName(question), field(question.metadata?.subject?.source)],
@@ -672,6 +768,7 @@ function renderQuestionDetail() {
     container.append(link);
   }
 }
+
 function renderMetadataEditor(question, toggleButton) {
   const form = node('form', 'metadata-editor');
   form.hidden = true;
