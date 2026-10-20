@@ -15,7 +15,12 @@
           <div class="brand-icon" aria-hidden="true"><span></span><span></span><span></span></div>
           <div><strong>StudyMadeEasy</strong><small>Your study workspace</small></div>
         </div>
-        <div class="sidebar-label">WORKSPACE</div>
+        <div class="sidebar-header-row">
+          <span class="sidebar-label">WORKSPACE</span>
+          <button id="sidebar-organize-btn" class="sidebar-three-dots" type="button" title="Organize workspace" aria-label="Organize workspace">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="2.2"/><circle cx="19" cy="12" r="2.2"/><circle cx="5" cy="12" r="2.2"/></svg>
+          </button>
+        </div>
         <nav class="main-nav" aria-label="Dashboard sections">
           <button class="nav-item is-active" type="button" data-view="overview" aria-current="page">
             <span class="nav-icon" aria-hidden="true">
@@ -52,7 +57,44 @@
         <header class="topbar">
           <div class="mobile-brand"><span class="mobile-brand-mark" aria-hidden="true">S</span><strong>StudyMadeEasy</strong></div>
           <div class="topbar-left">
-            <span class="topbar-kicker">STUDY WORKSPACE</span>
+            <div class="workspace-menu-wrapper" id="workspace-menu-wrapper">
+              <button id="workspace-btn" class="workspace-chip-button" type="button" aria-expanded="false" title="Switch workspace or subject">
+                <span class="workspace-dot" aria-hidden="true"></span>
+                <span id="current-workspace-name" class="topbar-kicker">STUDY WORKSPACE</span>
+                <span class="three-dots-badge" title="Organize workspace">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="2.2"/><circle cx="19" cy="12" r="2.2"/><circle cx="5" cy="12" r="2.2"/></svg>
+                </span>
+              </button>
+              <div id="workspace-menu-popover" class="workspace-popover" hidden>
+                <div class="popover-header">
+                  <div>
+                    <strong>Organize Workspace</strong>
+                    <small>Switch focus or launch subjects</small>
+                  </div>
+                  <span id="popover-question-total" class="pill accent">73 saved</span>
+                </div>
+                <div class="popover-body">
+                  <div class="popover-section-label">SUBJECTS</div>
+                  <div id="popover-subjects-list" class="popover-list"></div>
+                  
+                  <div class="popover-section-label">QUICK ACTIONS</div>
+                  <div class="popover-actions-grid">
+                    <button type="button" class="popover-action-btn" id="popover-all-questions">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10"/><path d="M6 10h10"/></svg>
+                      All questions
+                    </button>
+                    <button type="button" class="popover-action-btn" id="popover-open-lms">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" x2="21" y1="14" y2="3"/></svg>
+                      Open LMS ↗
+                    </button>
+                    <button type="button" class="popover-action-btn" id="popover-plan-task">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+                      Plan task
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
             <span class="breadcrumb-sep" aria-hidden="true">›</span>
             <span id="today-wrapper"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-1px;margin-right:4px;"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg><span id="today-label"></span></span>
           </div>
