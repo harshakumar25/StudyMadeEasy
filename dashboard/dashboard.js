@@ -268,101 +268,64 @@ function setView(view) {
     section.classList.toggle('is-visible', selected);
   }
   for (const button of document.querySelectorAll('[data-view]')) {
-    if (!button.closest('.main-nav, .mobile-nav')) continue;
+    if (!button.closest('.main-nav, .mobile-nav, .topbar-nav')) continue;
     const selected = button.dataset.view === view;
     button.classList.toggle('is-active', selected);
     if (selected) button.setAttribute('aria-current', 'page'); else button.removeAttribute('aria-current');
   }
+  closeSidebar();
   render();
   window.scrollTo({ top: 0, behavior: 'instant' });
 }
+
+function openSidebar() {
+  $('sidebar')?.classList.add('is-open');
+  $('sidebar-backdrop')?.classList.add('is-visible');
+}
+
+function closeSidebar() {
+  $('sidebar')?.classList.remove('is-open');
+  $('sidebar-backdrop')?.classList.remove('is-visible');
+}
+
+function toggleSidebar() {
+  const isOpen = $('sidebar')?.classList.contains('is-open');
+  if (isOpen) closeSidebar(); else openSidebar();
+}
+
 function render() {
-  $('today-label').textContent = humanDate(new Date(), { weekday: 'long', month: 'long', day: 'numeric' });
+  $('today-label').textContent = humanDate(new Date(), { weekday: 'long', month: 'short', day: 'numeric' });
   const questionCount = scopedQuestions().length;
   const taskCount = scopedPlans().filter((plan) => !isCompleted(plan)).length;
-  for (const [id, count] of [['nav-question-count', questionCount], ['nav-task-count', taskCount]]) {
-    $(id).textContent = String(count);
-    $(id).hidden = !count;
+  for (const [id, count] of [
+    ['nav-question-count', questionCount],
+    ['nav-task-count', taskCount],
+    ['top-nav-question-count', questionCount],
+    ['top-nav-task-count', taskCount],
+  ]) {
+    const el = $(id);
+    if (el) {
+      el.textContent = String(count);
+      el.hidden = !count;
+    }
   }
   if (state.view === 'overview') renderOverview();
   if (state.view === 'questions') renderQuestions();
   if (state.view === 'planner') renderPlanner();
 }
-function statCard(icon, count, label, onClick) {
-  const card = node('button', 'stat-card is-clickable');
+
+function bentoStatCard(icon, count, label, onClick) {
+  const card = node('button', 'bento-stat-pill');
   card.type = 'button';
-  card.append(node('span', 'stat-icon', icon));
-  const copy = node('div', 'stat-copy');
-  copy.append(node('strong', '', count), node('span', '', label));
-  card.append(copy);
-  const arrow = node('span', 'stat-arrow', '›');
-  card.append(arrow);
-  if (onClick) {
-    card.addEventListener('click', onClick);
-  }
-  return card;
-}
-
-function updateWorkspaceLabel() {
-  const labelEl = $('current-workspace-name');
-  if (labelEl) {
-    labelEl.textContent = state.subject === 'all' ? 'STUDY WORKSPACE' : subjectName(state.subject).toUpperCase();
-  }
-}
-
-function renderPopoverSubjects() {
-  const container = $('popover-subjects-list');
-  if (!container) return;
-  container.replaceChildren();
-
-  const totalQuestions = state.questions.length;
-  const countEl = $('popover-question-total');
-  if (countEl) countEl.textContent = `${totalQuestions} saved`;
-
-  const allItem = node('button', `popover-subject-item ${state.subject === 'all' ? 'is-active' : ''}`);
-  allItem.type = 'button';
-  allItem.innerHTML = `
-    <span class="subject-mark-mini">★</span>
-    <span class="popover-subject-name">All workspaces</span>
-    <span class="pill accent">${totalQuestions}</span>
+  card.innerHTML = `
+    <span class="stat-icon-mini">${icon}</span>
+    <div class="stat-copy-mini">
+      <strong class="stat-num">${count}</strong>
+      <span class="stat-txt">${label}</span>
+    </div>
   `;
-  allItem.addEventListener('click', () => {
-    state.subject = 'all';
-    $('subject-select').value = 'all';
-    updateWorkspaceLabel();
-    render();
-    $('workspace-menu-popover').hidden = true;
-  });
-  container.append(allItem);
-
-  for (const subject of state.subjects) {
-    const count = state.questions.filter((q) => questionSubjectId(q) === subject.id).length;
-    const isActive = state.subject === subject.id;
-    const item = node('button', `popover-subject-item ${isActive ? 'is-active' : ''}`);
-    item.type = 'button';
-    item.innerHTML = `
-      <span class="subject-mark-mini">${subject.name.slice(0, 1).toUpperCase()}</span>
-      <span class="popover-subject-name" title="${subject.name}">${subject.name}</span>
-      <span class="pill">${count}</span>
-    `;
-    item.addEventListener('click', () => {
-      state.subject = subject.id;
-      $('subject-select').value = subject.id;
-      updateWorkspaceLabel();
-      render();
-      $('workspace-menu-popover').hidden = true;
-    });
-    container.append(item);
-  }
-}
-
-function toggleWorkspaceMenu(forceOpen) {
-  const popover = $('workspace-menu-popover');
-  if (!popover) return;
-  renderPopoverSubjects();
-  const willOpen = typeof forceOpen === 'boolean' ? forceOpen : popover.hidden;
-  popover.hidden = !willOpen;
-  $('workspace-btn')?.setAttribute('aria-expanded', String(willOpen));
+  if (onClick) card.addEventListener('click', onClick);
+  return card;
 }
 
 function renderOverview() {
@@ -375,260 +338,106 @@ function renderOverview() {
   const dueToday = plans.filter((plan) => !isCompleted(plan) && dateKey(plan.dueAt) === today);
   const overdue = plans.filter(isOverdue);
   const completedThisWeek = plans.filter((plan) => isCompleted(plan) && asDate(plan.updatedAt)?.getTime() >= weekStart.getTime() && asDate(plan.updatedAt)?.getTime() < weekEnd.getTime());
-  
-  updateWorkspaceLabel();
 
-  $('overview-subtitle').textContent = state.subject === 'all' ? 'Your saved questions and plans, in one place.' : `Your saved questions and plans for ${subjectName(state.subject)}.`;
-  $('overview-stats').replaceChildren(
-    statCard('▤', questions.length, 'Saved questions', () => setView('questions')),
-    statCard('◷', dueToday.length, 'Due today', () => setView('planner')),
-    statCard('!', overdue.length, 'Overdue tasks', () => setView('planner')),
-    statCard('✓', completedThisWeek.length, 'Completed this week', () => setView('planner')),
-  );
+  const countBadge = $('bento-question-count');
+  if (countBadge) countBadge.textContent = String(questions.length);
+
+  const statsContainer = $('overview-stats');
+  if (statsContainer) {
+    statsContainer.replaceChildren(
+      bentoStatCard('📦', questions.length, 'Questions saved', () => setView('questions')),
+      bentoStatCard('⏰', dueToday.length, 'Due today', () => setView('planner')),
+      bentoStatCard('⚠️', overdue.length, 'Overdue tasks', () => setView('planner')),
+      bentoStatCard('✅', completedThisWeek.length, 'Completed this week', () => setView('planner')),
+    );
+  }
+
   const banner = $('reminder-banner');
-  const reminders = plans.filter((plan) => !isCompleted(plan) && asDate(plan.remindAt) && asDate(plan.remindAt).getTime() <= Date.now());
-  banner.hidden = reminders.length === 0;
-  if (reminders.length) banner.textContent = `${fmtCount(reminders.length, 'planned task')} reached ${reminders.length === 1 ? 'its' : 'their'} reminder time. Review what is still open.`;
-  renderGuidance(questions, plans, today, weekEnd);
+  if (banner) {
+    const reminders = plans.filter((plan) => !isCompleted(plan) && asDate(plan.remindAt) && asDate(plan.remindAt).getTime() <= Date.now());
+    banner.hidden = reminders.length === 0;
+    if (reminders.length) banner.textContent = `${fmtCount(reminders.length, 'planned task')} reached reminder time.`;
+  }
+
   renderTodayTasks(plans, today);
   renderSubjects();
 }
 
-function renderGuidance(questions, plans, today, weekEnd) {
-  const items = [];
-  const open = plans.filter((plan) => !isCompleted(plan));
-  const overdue = open.filter(isOverdue).sort(compareDue);
-  const dueToday = open.filter((plan) => dateKey(plan.dueAt) === today && !isOverdue(plan)).sort(compareDue);
-  const upcoming = open.filter((plan) => { const due = asDate(plan.dueAt); return due && due.getTime() > Date.now() && due.getTime() < weekEnd.getTime() && dateKey(due) !== today; }).sort(compareDue);
-  
-  for (const plan of overdue.slice(0, 2)) {
-    const q = plan.questionId ? state.questionById.get(plan.questionId) : null;
-    items.push({
-      type: 'Overdue task',
-      title: plan.title,
-      detail: `Overdue since ${humanDate(plan.dueAt)} · ${planSubjectName(plan)}`,
-      button: 'Open plan',
-      action: () => setView('planner'),
-      lmsUrl: questionLmsUrl(q),
-      question: q
-    });
-  }
-  for (const plan of dueToday.slice(0, Math.max(0, 3 - items.length))) {
-    const q = plan.questionId ? state.questionById.get(plan.questionId) : null;
-    items.push({
-      type: 'Due today',
-      title: plan.title,
-      detail: `Due today at ${humanTime(plan.dueAt)} · ${planSubjectName(plan)}`,
-      button: 'Open plan',
-      action: () => setView('planner'),
-      lmsUrl: questionLmsUrl(q),
-      question: q
-    });
-  }
-  for (const plan of upcoming.slice(0, Math.max(0, 3 - items.length))) {
-    const q = plan.questionId ? state.questionById.get(plan.questionId) : null;
-    items.push({
-      type: 'Upcoming task',
-      title: plan.title,
-      detail: `Due ${humanDate(plan.dueAt, { weekday: 'short', month: 'short', day: 'numeric' })} · ${planSubjectName(plan)}`,
-      button: 'Open plan',
-      action: () => setView('planner'),
-      lmsUrl: questionLmsUrl(q),
-      question: q
-    });
-  }
-  const plannedQuestionIds = new Set(plans.map((plan) => idOf(plan.questionId)).filter(Boolean));
-  const unplanned = questions.find((question) => !plannedQuestionIds.has(idOf(question.id)));
-  if (items.length < 3 && unplanned) {
-    items.push({
-      type: 'Saved question',
-      title: `Plan ${questionLabel(unplanned).toLowerCase()} from ${questionSubjectName(unplanned)}`,
-      detail: truncate(originalText(unplanned), 95) || 'Saved question without a planner task.',
-      button: 'Plan it',
-      action: () => openTaskDialog(null, unplanned),
-      lmsUrl: questionLmsUrl(unplanned),
-      question: unplanned
-    });
-  }
-  const container = $('guidance-list');
+function renderTodayTasks(plans, today) {
+  const container = $('today-task-list');
+  if (!container) return;
   container.replaceChildren();
-  if (!items.length) {
-    container.append(emptyState('Nothing needs your attention yet', questions.length || plans.length ? 'Your current tasks are complete. Add a task when you are ready to plan more.' : 'Save questions or add tasks to see suggestions based on your material.', '✦', 'Plan a task', () => openTaskDialog()));
+  const tasks = plans.filter((plan) => !isCompleted(plan) && (isOverdue(plan) || dateKey(plan.dueAt) === today)).sort(compareDue).slice(0, 5);
+  if (!tasks.length) {
+    container.append(emptyState('No tasks due right now', 'All clear! Add a task in your planner to stay ahead.', '✓', 'Add a task', () => openTaskDialog()));
     return;
   }
-  items.forEach((item, index) => {
-    const row = node('div', 'guidance-item');
-    row.append(node('span', 'guidance-number', String(index + 1)));
-    
-    const body = node('div', 'guidance-body');
-    const badge = node('span', 'guidance-type-badge', item.type);
-    body.append(badge, node('strong', '', item.title), node('p', '', item.detail));
-    row.append(body);
-
-    const actions = node('div', 'guidance-actions');
-    const button = node('button', 'primary-button guidance-btn', item.button);
-    button.type = 'button';
-    button.addEventListener('click', item.action);
-    actions.append(button);
-
-    // Three dots menu on guidance item
-    const dotsWrapper = node('div', 'relative-menu-wrapper');
-    const dotsBtn = node('button', 'icon-dots-btn guidance-dots-btn', '⋮');
-    dotsBtn.type = 'button';
-    dotsBtn.title = 'More options';
-
-    const menu = node('div', 'item-context-menu guidance-context-menu');
-    menu.hidden = true;
-
-    if (item.lmsUrl) {
-      const lmsOpt = node('a', 'context-menu-item', '↗️ Open in LMS');
-      lmsOpt.href = item.lmsUrl;
-      lmsOpt.target = '_blank';
-      lmsOpt.rel = 'noopener noreferrer';
-      lmsOpt.addEventListener('click', () => { menu.hidden = true; });
-      menu.append(lmsOpt);
-    }
-    if (item.question) {
-      const qOpt = node('button', 'context-menu-item', '📖 View in Question Bank');
-      qOpt.type = 'button';
-      qOpt.addEventListener('click', () => {
-        menu.hidden = true;
-        state.selectedQuestionId = idOf(item.question.id);
-        setView('questions');
-      });
-      menu.append(qOpt);
-    }
-    const copyOpt = node('button', 'context-menu-item', '📋 Copy title');
-    copyOpt.type = 'button';
-    copyOpt.addEventListener('click', () => {
-      menu.hidden = true;
-      navigator.clipboard.writeText(item.title);
-      showToast('Copied to clipboard.');
-    });
-    menu.append(copyOpt);
-
-    dotsBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      document.querySelectorAll('.subject-context-menu, .guidance-context-menu').forEach((m) => { if (m !== menu) m.hidden = true; });
-      menu.hidden = !menu.hidden;
-    });
-
-    dotsWrapper.append(dotsBtn, menu);
-    actions.append(dotsWrapper);
-    row.append(actions);
-
+  for (const plan of tasks) {
+    const row = node('div', 'compact-task');
+    const check = node('button', 'check-control', '');
+    check.type = 'button'; check.title = 'Mark complete';
+    check.addEventListener('click', () => toggleComplete(plan));
+    const info = node('div', 'task-info');
+    info.append(node('strong', '', first(plan.title, 'Untitled task')), node('small', '', `${planSubjectName(plan)} · ${humanTime(plan.dueAt)}`));
+    const tag = node('span', `due-tag ${isOverdue(plan) ? 'overdue' : 'today'}`, isOverdue(plan) ? 'Overdue' : 'Today');
+    row.append(check, info, tag);
     container.append(row);
-  });
+  }
 }
 
 function renderSubjects() {
   const container = $('subject-grid');
+  if (!container) return;
   container.replaceChildren();
-  const subjects = state.subject === 'all' ? state.subjects : state.subjects.filter((subject) => subject.id === state.subject);
+  const subjects = state.subjects;
   if (!subjects.length) {
-    container.append(emptyState('No subjects saved yet', 'Subjects appear here after you save LMS course material.', '▥'));
+    container.append(emptyState('No subjects saved yet', 'Subjects appear here after saving LMS material.', '▥'));
     return;
   }
   for (const subject of subjects) {
     const subjectQuestions = state.questions.filter((question) => questionSubjectId(question) === subject.id);
     const count = subjectQuestions.length;
-    const lmsUrl = subjectQuestions.map(questionLmsUrl).find(Boolean) || '';
+    const lmsUrl = subjectQuestions.map(questionLmsUrl).find(Boolean) || 'https://student.vedam.org';
+    const isActive = state.subject === subject.id;
 
-    const card = node('div', 'subject-card-interactive');
+    const card = node('div', `bento-subject-card ${isActive ? 'is-active' : ''}`);
     
-    // Main button area
-    const mainButton = node('button', 'subject-card-main');
-    mainButton.type = 'button';
-    mainButton.append(node('span', 'subject-mark', subject.name.slice(0, 1).toUpperCase()));
+    const mainBtn = node('button', 'bento-subject-main');
+    mainBtn.type = 'button';
+    mainBtn.append(node('span', 'subject-mark', subject.name.slice(0, 1).toUpperCase()));
     
-    const body = node('span', 'subject-card-body');
+    const body = node('div', 'bento-subject-body');
     body.append(
       node('strong', '', subject.name),
-      node('small', '', fmtCount(count, 'question'))
+      node('span', 'bento-subject-count', fmtCount(count, 'question'))
     );
-    mainButton.append(body);
-    mainButton.addEventListener('click', () => {
+    mainBtn.append(body);
+    mainBtn.addEventListener('click', () => {
       state.subject = subject.id;
       $('subject-select').value = subject.id;
-      updateWorkspaceLabel();
       setView('questions');
     });
 
-    // Action buttons toolbar
-    const actions = node('div', 'subject-card-actions');
-    
+    const actions = node('div', 'bento-subject-actions');
     if (lmsUrl) {
-      const lmsBtn = node('a', 'card-icon-action', '');
-      lmsBtn.href = lmsUrl;
-      lmsBtn.target = '_blank';
-      lmsBtn.rel = 'noopener noreferrer';
-      lmsBtn.title = 'Open course in LMS ↗';
-      lmsBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" x2="21" y1="14" y2="3"/></svg>';
-      actions.append(lmsBtn);
+      const lmsLink = node('a', 'card-lms-pill-link', 'LMS ↗');
+      lmsLink.href = lmsUrl;
+      lmsLink.target = '_blank';
+      lmsLink.rel = 'noopener noreferrer';
+      lmsLink.title = `Open ${subject.name} in LMS`;
+      actions.append(lmsLink);
     }
-
-    const dotsWrapper = node('div', 'relative-menu-wrapper');
-    const dotsBtn = node('button', 'card-icon-action dots-action-btn', '');
-    dotsBtn.type = 'button';
-    dotsBtn.title = 'More options';
-    dotsBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="2.2"/><circle cx="12" cy="5" r="2.2"/><circle cx="12" cy="19" r="2.2"/></svg>';
-    
-    const menu = node('div', 'item-context-menu subject-context-menu');
-    menu.hidden = true;
-    
-    const optBrowse = node('button', 'context-menu-item', `📖 View questions (${count})`);
-    optBrowse.type = 'button';
-    optBrowse.addEventListener('click', (e) => {
-      e.stopPropagation();
-      menu.hidden = true;
+    const browseBtn = node('button', 'card-browse-pill-btn', 'Browse →');
+    browseBtn.type = 'button';
+    browseBtn.title = `View questions`;
+    browseBtn.addEventListener('click', () => {
       state.subject = subject.id;
       $('subject-select').value = subject.id;
-      updateWorkspaceLabel();
       setView('questions');
     });
+    actions.append(browseBtn);
 
-    const optPlan = node('button', 'context-menu-item', '📅 Plan a task');
-    optPlan.type = 'button';
-    optPlan.addEventListener('click', (e) => {
-      e.stopPropagation();
-      menu.hidden = true;
-      openTaskDialog({ subjectId: subject.id });
-    });
-
-    if (lmsUrl) {
-      const optLms = node('a', 'context-menu-item', '↗️ Open course in LMS');
-      optLms.href = lmsUrl;
-      optLms.target = '_blank';
-      optLms.rel = 'noopener noreferrer';
-      optLms.addEventListener('click', () => { menu.hidden = true; });
-      menu.append(optLms);
-    }
-
-    const optFocus = node('button', 'context-menu-item', '🔍 Focus workspace');
-    optFocus.type = 'button';
-    optFocus.addEventListener('click', (e) => {
-      e.stopPropagation();
-      menu.hidden = true;
-      state.subject = subject.id;
-      $('subject-select').value = subject.id;
-      updateWorkspaceLabel();
-      render();
-    });
-
-    menu.append(optBrowse, optPlan);
-    if (lmsUrl) menu.append();
-    menu.append(optFocus);
-
-    dotsBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      document.querySelectorAll('.subject-context-menu, .guidance-context-menu').forEach((m) => { if (m !== menu) m.hidden = true; });
-      menu.hidden = !menu.hidden;
-    });
-
-    dotsWrapper.append(dotsBtn, menu);
-    actions.append(dotsWrapper);
-
-    card.append(mainButton, actions);
+    card.append(mainBtn, actions);
     container.append(card);
   }
 }
@@ -1408,69 +1217,26 @@ function bindEvents() {
   $('task-dialog').addEventListener('close', () => { state.editingPlanId = null; });
   window.addEventListener('focus', () => { loadAll(); });
 
-  // Workspace Menu and Three Dots
-  const workspaceWrapper = $('workspace-menu-wrapper');
-  const workspaceBtn = $('workspace-btn');
-  const sidebarOrganizeBtn = $('sidebar-organize-btn');
-  const popover = $('workspace-menu-popover');
-
-  workspaceBtn?.addEventListener('click', (e) => {
+  // Sidebar off-canvas drawer toggle via ☰ hamburger (three lines)
+  $('menu-toggle')?.addEventListener('click', (e) => {
     e.stopPropagation();
-    toggleWorkspaceMenu();
+    toggleSidebar();
   });
-  sidebarOrganizeBtn?.addEventListener('click', (e) => {
+  $('sidebar-close-btn')?.addEventListener('click', (e) => {
     e.stopPropagation();
-    toggleWorkspaceMenu();
+    closeSidebar();
+  });
+  $('sidebar-backdrop')?.addEventListener('click', () => {
+    closeSidebar();
+  });
+  document.querySelectorAll('#sidebar .nav-item').forEach((item) => {
+    item.addEventListener('click', () => closeSidebar());
   });
 
-  let hoverTimer;
-  workspaceWrapper?.addEventListener('mouseenter', () => {
-    clearTimeout(hoverTimer);
-    toggleWorkspaceMenu(true);
-  });
-  workspaceWrapper?.addEventListener('mouseleave', () => {
-    hoverTimer = setTimeout(() => {
-      if (popover) popover.hidden = true;
-      workspaceBtn?.setAttribute('aria-expanded', 'false');
-    }, 250);
-  });
-
-  // Popover quick action buttons
-  $('popover-all-questions')?.addEventListener('click', () => {
-    state.subject = 'all';
-    $('subject-select').value = 'all';
-    updateWorkspaceLabel();
-    if (popover) popover.hidden = true;
-    setView('questions');
-  });
-
-  $('popover-open-lms')?.addEventListener('click', () => {
-    if (popover) popover.hidden = true;
-    window.open('https://student.vedam.org', '_blank', 'noopener,noreferrer');
-  });
-
-  $('popover-plan-task')?.addEventListener('click', () => {
-    if (popover) popover.hidden = true;
-    openTaskDialog();
-  });
-
-  // Close context menus when clicking outside
-  document.addEventListener('click', (e) => {
-    if (popover && !e.target.closest('#workspace-menu-wrapper') && !e.target.closest('#sidebar-organize-btn')) {
-      popover.hidden = true;
-      workspaceBtn?.setAttribute('aria-expanded', 'false');
-    }
-    if (!e.target.closest('.relative-menu-wrapper')) {
-      document.querySelectorAll('.subject-context-menu, .guidance-context-menu').forEach((m) => { m.hidden = true; });
-    }
-  });
-
-  // Close menus on Escape key
+  // Close drawer on Escape key
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
-      if (popover) popover.hidden = true;
-      workspaceBtn?.setAttribute('aria-expanded', 'false');
-      document.querySelectorAll('.subject-context-menu, .guidance-context-menu').forEach((m) => { m.hidden = true; });
+      closeSidebar();
     }
   });
 }

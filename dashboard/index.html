@@ -10,17 +10,18 @@
   </head>
   <body>
     <div class="app-shell">
-      <aside class="sidebar" aria-label="Main navigation">
-        <div class="brand" aria-label="StudyMadeEasy">
-          <div class="brand-icon" aria-hidden="true"><span></span><span></span><span></span></div>
-          <div><strong>StudyMadeEasy</strong><small>Your study workspace</small></div>
+      <div id="sidebar-backdrop" class="sidebar-backdrop"></div>
+
+      <!-- Off-canvas drawer sidebar (opened via ☰ hamburger menu) -->
+      <aside id="sidebar" class="sidebar" aria-label="Main navigation">
+        <div class="sidebar-header">
+          <div class="brand" aria-label="StudyMadeEasy">
+            <div class="brand-icon" aria-hidden="true"><span></span><span></span><span></span></div>
+            <div><strong>StudyMadeEasy</strong><small>Study workspace</small></div>
+          </div>
+          <button id="sidebar-close-btn" class="icon-button" type="button" aria-label="Close menu">✕</button>
         </div>
-        <div class="sidebar-header-row">
-          <span class="sidebar-label">WORKSPACE</span>
-          <button id="sidebar-organize-btn" class="sidebar-three-dots" type="button" title="Organize workspace" aria-label="Organize workspace">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="2.2"/><circle cx="19" cy="12" r="2.2"/><circle cx="5" cy="12" r="2.2"/></svg>
-          </button>
-        </div>
+        <div class="sidebar-label">WORKSPACE SECTIONS</div>
         <nav class="main-nav" aria-label="Dashboard sections">
           <button class="nav-item is-active" type="button" data-view="overview" aria-current="page">
             <span class="nav-icon" aria-hidden="true">
@@ -47,90 +48,127 @@
           <div class="sidebar-tip">
             <span aria-hidden="true">⚡</span>
             <p>Plan a little. Make steady progress.</p>
-            <span class="tip-arrow" aria-hidden="true">→</span>
           </div>
-          <p class="sidebar-caption">Your dashboard reflects records you have saved from your LMS.</p>
+          <p class="sidebar-caption">Saved records from your LMS.</p>
         </div>
       </aside>
 
       <div class="content-shell">
         <header class="topbar">
-          <div class="mobile-brand"><span class="mobile-brand-mark" aria-hidden="true">S</span><strong>StudyMadeEasy</strong></div>
           <div class="topbar-left">
-            <div class="workspace-menu-wrapper" id="workspace-menu-wrapper">
-              <button id="workspace-btn" class="workspace-chip-button" type="button" aria-expanded="false" title="Switch workspace or subject">
-                <span class="workspace-dot" aria-hidden="true"></span>
-                <span id="current-workspace-name" class="topbar-kicker">STUDY WORKSPACE</span>
-                <span class="three-dots-badge" title="Organize workspace">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="2.2"/><circle cx="19" cy="12" r="2.2"/><circle cx="5" cy="12" r="2.2"/></svg>
-                </span>
-              </button>
-              <div id="workspace-menu-popover" class="workspace-popover" hidden>
-                <div class="popover-header">
-                  <div>
-                    <strong>Organize Workspace</strong>
-                    <small>Switch focus or launch subjects</small>
-                  </div>
-                  <span id="popover-question-total" class="pill accent">73 saved</span>
-                </div>
-                <div class="popover-body">
-                  <div class="popover-section-label">SUBJECTS</div>
-                  <div id="popover-subjects-list" class="popover-list"></div>
-                  
-                  <div class="popover-section-label">QUICK ACTIONS</div>
-                  <div class="popover-actions-grid">
-                    <button type="button" class="popover-action-btn" id="popover-all-questions">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10"/><path d="M6 10h10"/></svg>
-                      All questions
-                    </button>
-                    <button type="button" class="popover-action-btn" id="popover-open-lms">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" x2="21" y1="14" y2="3"/></svg>
-                      Open LMS ↗
-                    </button>
-                    <button type="button" class="popover-action-btn" id="popover-plan-task">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
-                      Plan task
-                    </button>
-                  </div>
-                </div>
+            <button id="menu-toggle" class="hamburger-btn" type="button" aria-label="Toggle navigation menu" title="Toggle menu">
+              <span class="hamburger-line"></span>
+              <span class="hamburger-line"></span>
+              <span class="hamburger-line"></span>
+            </button>
+            <div class="topbar-brand" role="button" data-view="overview" title="StudyMadeEasy Workspace">
+              <div class="brand-icon" aria-hidden="true"><span></span><span></span><span></span></div>
+              <div class="brand-text">
+                <strong>StudyMadeEasy</strong>
+                <span class="topbar-date" id="today-label"></span>
               </div>
             </div>
-            <span class="breadcrumb-sep" aria-hidden="true">›</span>
-            <span id="today-wrapper"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-1px;margin-right:4px;"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg><span id="today-label"></span></span>
           </div>
+
+          <nav class="topbar-nav" aria-label="Main sections">
+            <button class="topbar-nav-pill is-active" type="button" data-view="overview" aria-current="page">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              <span>Overview</span>
+            </button>
+            <button class="topbar-nav-pill" type="button" data-view="questions">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10"/><path d="M6 10h10"/></svg>
+              <span>Question bank</span>
+              <span id="top-nav-question-count" class="nav-count">73</span>
+            </button>
+            <button class="topbar-nav-pill" type="button" data-view="planner">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+              <span>My planner</span>
+              <span id="top-nav-task-count" class="nav-count">1</span>
+            </button>
+          </nav>
+
           <div class="topbar-actions">
-            <label for="subject-select">Subject</label>
-            <select id="subject-select" aria-label="Filter dashboard by subject"><option value="all">All subjects</option></select>
-            <button id="refresh-button" class="icon-button" type="button" title="Refresh saved records" aria-label="Refresh saved records">↻</button>
+            <select id="subject-select" aria-label="Filter dashboard by subject">
+              <option value="all">All subjects</option>
+            </select>
+            <button class="primary-button topbar-cta" type="button" data-action="add-task">
+              <span>＋ Plan task</span>
+            </button>
+            <a href="https://student.vedam.org" target="_blank" rel="noopener noreferrer" class="secondary-button topbar-lms" title="Open LMS">
+              LMS ↗
+            </a>
+            <button id="refresh-button" class="icon-button" type="button" title="Refresh saved records">↻</button>
           </div>
         </header>
 
         <main id="main-content">
           <section id="overview-view" class="view is-visible" aria-labelledby="overview-heading">
-            <div class="page-heading overview-heading">
-              <div><p class="eyebrow">YOUR STUDY AT A GLANCE</p><h1 id="overview-heading">Make today count.</h1><p id="overview-subtitle" class="page-subtitle">Your saved questions and plans, in one place.</p></div>
-              <button class="primary-button" type="button" data-action="add-task"><span aria-hidden="true">＋</span> Plan a task</button>
-            </div>
-
             <div id="reminder-banner" class="reminder-banner" role="status" hidden></div>
 
-            <div id="overview-stats" class="stats-grid" aria-label="Study statistics"></div>
+            <div class="bento-container">
+              <!-- Top-Left Bento: Warm/Cream Hero Card matching reference -->
+              <div class="bento-card bento-hero">
+                <div class="bento-hero-header">
+                  <span class="bento-eyebrow">YOUR STUDY WORKSPACE</span>
+                  <h1 class="bento-title" id="overview-heading">Make today count.</h1>
+                </div>
+                <div class="bento-hero-middle">
+                  <div class="bento-thumb">
+                    <span class="bento-thumb-number" id="bento-question-count">73</span>
+                    <span class="bento-thumb-label">Questions</span>
+                  </div>
+                  <p class="bento-desc" id="overview-subtitle">
+                    Course questions and tasks captured directly from your LMS, organized in one fluid workspace.
+                  </p>
+                </div>
+                <div class="bento-hero-actions">
+                  <button class="primary-button bento-btn" type="button" data-view="questions">
+                    <span>Question bank →</span>
+                  </button>
+                  <button class="secondary-button bento-btn" type="button" data-action="add-task">
+                    <span>＋ Plan task</span>
+                  </button>
+                </div>
+              </div>
 
-            <div class="overview-grid">
-              <section class="panel guidance-panel" aria-labelledby="guidance-heading">
-                <div class="panel-heading"><div><p class="eyebrow">A GOOD PLACE TO START</p><h2 id="guidance-heading">What should I do?</h2></div><span class="sparkle" aria-hidden="true">✦</span></div>
-                <div id="guidance-list" class="guidance-list"></div>
-              </section>
-              <section class="panel" aria-labelledby="today-heading">
-                <div class="panel-heading"><div><p class="eyebrow">YOUR PLAN</p><h2 id="today-heading">Today &amp; overdue</h2></div><button class="text-button" type="button" data-view="planner">Open planner <span aria-hidden="true">→</span></button></div>
-                <div id="today-task-list" class="compact-task-list"></div>
-              </section>
+              <!-- Top-Right Bento: Soft Blue Focus Card matching reference -->
+              <div class="bento-card bento-plan">
+                <div class="bento-card-header">
+                  <div>
+                    <span class="bento-eyebrow">YOUR STUDY PLAN</span>
+                    <h2>Today &amp; overdue</h2>
+                  </div>
+                  <button class="text-button" type="button" data-view="planner">Open planner →</button>
+                </div>
+                <div id="today-task-list" class="bento-task-list"></div>
+              </div>
+
+              <!-- Bottom-Left Bento: Soft Green Material Card matching reference -->
+              <div class="bento-card bento-material">
+                <div class="bento-card-header">
+                  <div>
+                    <span class="bento-eyebrow">EXPLORE MATERIAL</span>
+                    <h2>Subjects &amp; LMS Courses</h2>
+                  </div>
+                  <button class="text-button" type="button" data-view="questions">All questions →</button>
+                </div>
+                <div id="subject-grid" class="bento-subject-grid"></div>
+              </div>
+
+              <!-- Bottom-Right Bento: Soft Rose Stats Card matching reference -->
+              <div class="bento-card bento-stats">
+                <div class="bento-card-header">
+                  <div>
+                    <span class="bento-eyebrow">STUDY INSIGHTS</span>
+                    <h2>Progress</h2>
+                  </div>
+                  <a href="https://student.vedam.org" target="_blank" rel="noopener noreferrer" class="lms-pill-link">
+                    LMS Portal ↗
+                  </a>
+                </div>
+                <div id="overview-stats" class="bento-stats-grid"></div>
+              </div>
             </div>
-
-            <section class="panel subject-panel" aria-labelledby="subject-heading">
-              <div class="panel-heading"><div><p class="eyebrow">EXPLORE YOUR MATERIAL</p><h2 id="subject-heading">Subjects</h2></div><button class="text-button" type="button" data-view="questions">View questions <span aria-hidden="true">→</span></button></div>
-              <div id="subject-grid" class="subject-grid"></div>
-            </section>
           </section>
 
           <section id="questions-view" class="view" aria-labelledby="questions-heading" hidden>
