@@ -633,7 +633,7 @@ function renderQuestionCard(question) {
   top.append(indexEl);
   if (isSelected) {
     const checkmark = node('span', 'selected-check-icon');
-    checkmark.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="#4f46e5"><circle cx="12" cy="12" r="10" fill="#4f46e5"/><path d="m9 12 2 2 4-4" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    checkmark.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="#2C3480"><circle cx="12" cy="12" r="10" fill="#2C3480"/><path d="m9 12 2 2 4-4" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
     top.append(checkmark);
   } else {
     const subLabel = questionSubjectName(question);
