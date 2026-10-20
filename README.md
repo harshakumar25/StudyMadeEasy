@@ -9,41 +9,54 @@
                          |___/                                           |___/ 
 ```
 
-> **StudyMadeEasy** is a local-first browser extension for the Vedam LMS. It captures questions exactly as presented, organizes them by subject and week, and lets you plan and track your practice sessions with reminders.
+> **StudyMadeEasy** is a local-first browser extension for the Vedam student LMS. It preserves questions exactly as presented, organizes them by subject and week, and provides a study dashboard with task scheduling and reminders.
 
 ---
 
 ## ✨ Features
 
-- **Local-First Question Bank**: Preserves exact question text, formatting, examples, constraints, and HTML snapshots directly in your browser's IndexedDB.
-- **Direct LMS Redirect**: Jump directly to any saved question on Vedam LMS with one click via **Open in LMS ↗**.
-- **Study Planner & Reminders**: Schedule tasks to solve questions or study topics, complete with browser notifications.
-- **Offline Backup & Restore**: One-click **Export JSON** and **Import JSON** to keep your question collection safe.
+- **Local-First Question Bank**: Captures full question descriptions, examples, code blocks, constraints, and HTML snapshots directly in your browser's local IndexedDB.
+- **Direct LMS Redirect**: Jump straight to any question on the Vedam LMS with a single click via **Open in LMS ↗**.
+- **Study Planner & Reminders**: Schedule tasks to practice questions or review topics, with native browser notifications when tasks are due.
+- **Offline Backup & Restore**: One-click **Export JSON** and **Import JSON** to back up and restore your entire question repository anytime.
 
 ---
 
 ## 🚀 Quick Setup (Load Unpacked)
 
-1. Open **`brave://extensions`** (or **`chrome://extensions`**).
-2. Toggle **Developer mode** to **ON** (top-right corner).
-3. Click **Load unpacked** (top-left) and select this repository folder:
+1. **Clone or download the repository:**
+   ```bash
+   git clone https://github.com/harshakumar25/StudyMadeEasy.git
+   cd StudyMadeEasy
    ```
-   /Users/harshkumar/Desktop/StudyMadeEasy
-   ```
-4. Click the puzzle icon (Extensions) on your browser toolbar and **Pin 📌 LMS Question Intelligence**.
+
+2. **Open Extensions in your browser:**
+   - Chrome: Navigate to `chrome://extensions`
+   - Brave: Navigate to `brave://extensions`
+   - Edge: Navigate to `edge://extensions`
+
+3. **Enable Developer Mode:**
+   - Turn on the **Developer mode** toggle in the top-right corner.
+
+4. **Load the Extension:**
+   - Click **Load unpacked** (top-left).
+   - Select the cloned `StudyMadeEasy` folder (the directory containing `manifest.json`).
+
+5. **Pin to Toolbar:**
+   - Click the puzzle icon (Extensions) in your browser toolbar and pin **LMS Question Intelligence** for quick access.
 
 ---
 
 ## 📖 How to Use
 
-1. Log into **`https://student.vedam.org/`**.
-2. Open any course, session, or question (on its *Description* tab).
-3. Click the extension popup icon and click **Sync This Question** (or course/session).
-4. Click **Open Question Bank** or **My planner** to access your dashboard.
-5. Click **Open in LMS ↗** on any question card or detail view to jump straight to that problem on Vedam.
+1. Log into your LMS at **`https://student.vedam.org/`**.
+2. Open any course, session, or individual question (ensure the *Description* tab is open).
+3. Click the extension popup in your browser toolbar and click **Sync This Question** (or course/session).
+4. Click **Open Question Bank** or **My planner** to launch your dashboard.
+5. Click **Open in LMS ↗** on any question card or detail view to jump directly to that problem on Vedam.
 
 ---
 
 ## 🔒 Privacy & Storage
 
-All data stays 100% on your device in local IndexedDB storage. Nothing is sent to external servers or third-party cloud services.
+All data is stored 100% locally on your machine in the browser's IndexedDB. No question content, credentials, or personal information is ever transmitted to external servers or cloud services.
